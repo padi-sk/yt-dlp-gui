@@ -61,6 +61,23 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate release notes
+        id: release_notes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              const res = await github.rest.repos.generateReleaseNotes({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: context.ref_name
+              });
+              core.setOutput('notes', res.data.body || '');
+            } catch (e) {
+              core.warning(`Failed to generate release notes: ${e}`);
+              core.setOutput('notes', '');
+            }
+
       - name: Build and release
         uses: tauri-apps/tauri-action@v0
         env:
@@ -70,9 +87,10 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: "${{ github.ref_name }}"
+          releaseBody: ${{ steps.release_notes.outputs.notes }}
           releaseDraft: true
           prerelease: false
-          generateReleaseNotes: true
+          generateReleaseNotes: false
           includeUpdaterJson: true
           args: --target ${{ matrix.target }}
 

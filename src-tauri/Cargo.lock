@@ -6601,7 +6601,7 @@ dependencies = [
 
 [[package]]
 name = "yt-dlp-gui"
-version = "0.8.0"
+version = "1.0.0"
 dependencies = [
  "axum",
  "futures-util",
